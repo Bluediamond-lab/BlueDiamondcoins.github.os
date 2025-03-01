@@ -1,0 +1,75 @@
+/BlueDiamondWebsite
+│── index.html  (Main Page)
+│── style.css   (Styling)
+│── script.js   (JavaScript for interactive elements)
+│── assets/     (Logos, banners, icons)
+│── countdown.html  (Launch countdown page)// Web3.js is required for blockchain interactions
+async function stakeTokens() {
+    if (typeof window.ethereum !== "undefined") {
+        const web3 = new Web3(window.ethereum);
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+
+        const stakingContractAddress = "0xYourStakingContract"; // Replace with actual contract address
+        const stakingABI = [ /* Add your staking contract ABI here */ ];
+
+        const stakingContract = new web3.eth.Contract(stakingABI, stakingContractAddress);
+        const stakeAmount = document.getElementById("stakeAmount").value;
+
+        if (stakeAmount > 0) {
+            try {
+                const accounts = await web3.eth.getAccounts();
+                await stakingContract.methods.stake(web3.utils.toWei(stakeAmount, "ether")).send({
+                    from: accounts[0]
+                });
+
+                document.getElementById("stakingStatus").innerText = `✅ Successfully staked ${stakeAmount} BLD!`;
+            } catch (error) {
+                document.getElementById("stakingStatus").innerText = "❌ Staking failed. Please try again.";
+            }
+        } else {
+            document.getElementById("stakingStatus").innerText = "❌ Enter a valid amount!";
+        }
+    } else {
+        document.getElementById("stakingStatus").innerText = "❌ Web3 provider not detected!";
+    }
+}<section id="priceTracker">
+    <h2>Real-Time BLD Price</h2>
+    <p>Current Price: <span id="bldPrice">$0.00</span></p>
+</section>async function fetchBLDPrice() {
+    try {
+        const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=blue-diamond&vs_currencies=usd");
+        const data = await response.json();
+        document.getElementById("bldPrice").innerText = `$${data["blue-diamond"].usd.toFixed(4)}`;
+    } catch (error) {
+        console.log("Error fetching BLD price:", error);
+    }
+}
+
+// Refresh price every 30 seconds
+setInterval(fetchBLDPrice, 30000);
+fetchBLDPrice();#staking, #priceTracker {
+    background-color: #1e1e1e;
+    padding: 20px;
+    margin: 20px auto;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 500px;
+}
+
+#stakeAmount {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: none;
+    text-align: center;
+}
+
+button {
+    background-color: #ffcc00;
+    color: black;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
